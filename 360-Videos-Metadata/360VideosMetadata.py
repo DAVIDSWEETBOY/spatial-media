@@ -142,7 +142,7 @@ class atom:
             header_size = 16
 
         if (size < 8):
-            print "Error, invalid size in ", name, " at ", position
+            print ("Error, invalid size in ", name, " at ", position)
             return None
 
         if (position + size > end):
@@ -218,7 +218,7 @@ class atom:
         """Prints the atom structure."""
         size1 = self.header_size
         size2 = self.content_size
-        print indent, self.name, " [", size1, ", ", size2, " ]"
+        print (indent, self.name, " [", size1, ", ", size2, " ]")
 
 
 class container_atom(atom):
@@ -248,7 +248,7 @@ class container_atom(atom):
             header_size = 16
 
         if (size < 8):
-            print "Error, invalid size in ", name, " at ", position
+            print ("Error, invalid size in ", name, " at ", position)
             return None
 
         if (position + size > end):
@@ -280,7 +280,7 @@ class container_atom(atom):
         """Prints the atom structure and recurses on contents."""
         size1 = self.header_size
         size2 = self.content_size
-        print indent, self.name, " [", size1, ", ", size2, " ]"
+        print (indent, self.name, " [", size1, ", ", size2, " ]")
 
         size = len(self.contents)
         this_indent = indent
@@ -321,7 +321,7 @@ class container_atom(atom):
             if (content.name == element.name):
                 if (isinstance(content, container_leaf)):
                     return content.merge(element)
-                print "Error, cannot merge leafs."
+                print ("Error, cannot merge leafs.")
                 return False
 
         self.contents.append(element)
@@ -468,7 +468,7 @@ class mpeg4(container_atom):
         contents = atom.load_multiple(fh, 0, size)
 
         if (contents is None):
-            print "Error, failed to load .mp4 file."
+            print ("Error, failed to load .mp4 file.")
             return None
 
         if (len(contents) == 0):
@@ -507,12 +507,12 @@ class mpeg4(container_atom):
 
     def merge(self, element):
         """Mpeg4 containers do not support merging."""
-        print "Cannot merge mpeg4 files"
+        print ("Cannot merge mpeg4 files")
         exit(0)
 
     def print_structure(self):
         """Print mpeg4 file structure recursively."""
-        print "mpeg4 [", self.content_size, "]"
+        print ("mpeg4 [", self.content_size, "]")
 
         size = len(self.contents)
         for i in range(size):
@@ -674,21 +674,21 @@ def ParseSphericalXML(contents):
                 index += len("<rdf:SphericalVideo")
                 contents = contents[:index] + rdf_prefix + contents[index:]
             parsed_xml = xml.etree.ElementTree.XML(contents)
-            print "\t\tWarning missing rdf prefix:", rdf_prefix
+            print ("\t\tWarning missing rdf prefix:", rdf_prefix)
         except xml.etree.ElementTree.ParseError as e:
-            print "\t\tParser Error on XML"
-            print e
-            print contents
+            print ("\t\tParser Error on XML")
+            print (e)
+            print (contents)
             return
 
     for child in parsed_xml.getchildren():
         if child.tag in spherical_tags.keys():
-            print "\t\tFound:", spherical_tags[child.tag], "=", child.text
+            print ("\t\tFound:", spherical_tags[child.tag], "=", child.text)
         else:
             tag = child.tag
             if (child.tag[:len(spherical_prefix)] == spherical_prefix):
                 tag = child.tag[len(spherical_prefix):]
-            print "\t\tUnknown:", tag, "=", child.text
+            print ("\t\tUnknown:", tag, "=", child.text)
 
 
 def ParseSphericalMpeg4(mpeg4_file, fh):
@@ -701,7 +701,7 @@ def ParseSphericalMpeg4(mpeg4_file, fh):
     track_num = 0
     for element in mpeg4_file.moov_atom.contents:
         if element.name == tag_trak:
-            print "\tTrack", track_num
+            print ("\tTrack", track_num)
             track_num += 1
             for sub_element in element.contents:
                 if sub_element.name == tag_uuid:
@@ -730,7 +730,7 @@ def PrintMpeg4(input_file):
     if (mpeg4_file is None):
         return
 
-    print "Loaded file settings"
+    print ("Loaded file settings")
     ParseSphericalMpeg4(mpeg4_file, in_fh)
     return
 
@@ -747,10 +747,10 @@ def InjectMpeg4(input_file, output_file, metadata):
         return
 
     if not mpeg4_add_spherical(mpeg4_file, in_fh, metadata):
-        print "Failed to insert spherical data"
+        print ("Failed to insert spherical data")
         return
 
-    print "Saved file settings"
+    print ("Saved file settings")
     ParseSphericalMpeg4(mpeg4_file, in_fh)
 
     out_fh = open(output_file, "wb")
@@ -761,15 +761,15 @@ def InjectMpeg4(input_file, output_file, metadata):
 
 def PrintMKV(input_file):
     if not ffmpeg():
-        print "please install ffmpeg for mkv support"
+        print ("please install ffmpeg for mkv support")
         exit(0)
 
-    print "Loaded file settings"
+    print ("Loaded file settings")
     ParseSphericalMKV(input_file)
 
 def InjectMKV(input_file, output_file, metadata):
     if not ffmpeg():
-        print "please install ffmpeg for mkv support"
+        print ("please install ffmpeg for mkv support")
         exit(0)
 
     process = subprocess.Popen(
@@ -777,10 +777,10 @@ def InjectMKV(input_file, output_file, metadata):
          'spherical-video=' + metadata, "-c:v", "copy",
          "-c:a", "copy", output_file], stderr=subprocess.PIPE,
         stdout=subprocess.PIPE)
-    print "Press y <enter> to confirm overwrite"
+    print ("Press y <enter> to confirm overwrite")
     process.wait()
     stdout, stderr = process.communicate()
-    print "Saved file settings"
+    print ("Saved file settings")
     ParseSphericalMKV(output_file)
 
 
@@ -791,10 +791,10 @@ def PrintMetadata(src):
         in_fh = open(infile, "rb")
         in_fh.close()
     except:
-        print "Error: ", infile, " does not exist or we do not have permission"
+        print ("Error: ", infile, " does not exist or we do not have permission")
         return
 
-    print "Processing: ", infile, "\n"
+    print ("Processing: ", infile, "\n")
 
     if (os.path.splitext(infile)[1].lower() in [".webm", ".mkv"]):
         PrintMKV(infile)
@@ -804,7 +804,7 @@ def PrintMetadata(src):
         PrintMpeg4(infile)
         return
 
-    print "Unknown file type"
+    print ("Unknown file type")
     return
 
 
@@ -813,17 +813,17 @@ def InjectMetadata(src, dest, metadata):
     outfile = os.path.abspath(dest)
 
     if (infile == outfile):
-        print "Input and output cannot be the same"
+        print ("Input and output cannot be the same")
         return
 
     try:
         in_fh = open(infile, "rb")
         in_fh.close()
     except:
-        print "Error: ", infile, " does not exist or we do not have permission"
+        print ("Error: ", infile, " does not exist or we do not have permission")
         return
 
-    print "Processing: ", infile, "\n"
+    print ("Processing: ", infile, "\n")
 
     if (os.path.splitext(infile)[1].lower() in [ ".webm", ".mkv"]):
         InjectMKV(infile, outfile, metadata)
@@ -833,7 +833,7 @@ def InjectMetadata(src, dest, metadata):
         InjectMpeg4(infile, outfile, metadata)
         return
 
-    print "Unknown file type"
+    print ("Unknown file type")
     return
 
 
@@ -872,7 +872,7 @@ def main():
 
     if opts.inject:
         if len(args) != 2:
-            print "Injecting metadata requires both a source and destination."
+            print ("Injecting metadata requires both a source and destination.")
             return
         InjectMetadata(args[0], args[1], spherical_xml)
         return
